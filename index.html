@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snapdax — Pilot Companion</title>
+<style>
+  :root{
+    --gold:#c6a664; --gold-dim:#8f7a49;
+    --bone:#ece4d6; --ink:#cdc3b4; --dim:#8f867a;
+    --crimson:#c05a44; --sage:#83a884; --amber:#d8b25a;
+    --line:rgba(198,166,100,.18);
+    --line-soft:rgba(236,228,214,.09);
+    --glass:rgba(18,15,16,.72);
+    --glass-2:rgba(30,25,27,.66);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--sans);color:var(--ink);line-height:1.6;
+    background:#0c0a0b;padding-bottom:64px;-webkit-font-smoothing:antialiased;
+  }
+  /* fixed, treated art background */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-2;
+    background:url("assets/snapdax-bg.webp") center 22% / cover no-repeat;
+    filter:saturate(.85) brightness(.72) blur(2px);transform:scale(1.06);
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:-1;
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(120,40,30,.20), transparent 55%),
+      linear-gradient(180deg, rgba(10,8,9,.72) 0%, rgba(10,8,9,.90) 42%, rgba(9,7,8,.97) 100%);
+  }
+
+  .wrap{max-width:720px;margin:0 auto;padding:0 18px}
+
+  /* ---- masthead ---- */
+  header{text-align:center;padding:52px 18px 30px}
+  header .eyebrow{
+    font-family:var(--sans);font-size:.7rem;letter-spacing:.42em;text-transform:uppercase;
+    color:var(--gold-dim);margin-bottom:14px;padding-left:.42em;
+  }
+  header h1{
+    font-family:var(--serif);font-weight:600;font-size:2.9rem;letter-spacing:.02em;
+    margin:0;color:var(--bone);text-shadow:0 2px 18px rgba(0,0,0,.6);
+  }
+  header .rule{width:56px;height:1px;background:var(--gold);opacity:.6;margin:16px auto}
+  header .sub{font-family:var(--serif);font-style:italic;font-size:1.02rem;color:var(--ink);opacity:.9}
+  header .meta{
+    margin-top:12px;font-size:.76rem;letter-spacing:.06em;color:var(--dim);
+  }
+  header .meta .pip{color:var(--bone);font-family:var(--serif);letter-spacing:.12em}
+
+  /* ---- panels ---- */
+  .panel{
+    background:var(--glass);border:1px solid var(--line);border-radius:6px;
+    padding:22px 24px;margin-bottom:18px;
+    box-shadow:0 8px 30px rgba(0,0,0,.35);
+    -webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);
+  }
+  .panel > .head{display:flex;align-items:baseline;gap:12px;margin:0 0 4px}
+  .panel .num-mark{font-family:var(--serif);font-size:.8rem;color:var(--gold-dim);letter-spacing:.15em}
+  .panel h2{
+    font-family:var(--serif);font-weight:600;font-size:1.24rem;letter-spacing:.01em;
+    color:var(--bone);margin:0;
+  }
+  .panel .lead{color:var(--dim);font-size:.86rem;margin:6px 0 16px;max-width:60ch}
+  .panel .lead b{color:var(--ink);font-weight:600}
+  .hr{height:1px;background:var(--line-soft);margin:0 0 16px;border:0}
+
+  /* ---- toggles ---- */
+  .toggles{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);
+    border:1px solid var(--line-soft);border-radius:6px;overflow:hidden}
+  @media(max-width:520px){.toggles{grid-template-columns:1fr}}
+  label.tog{
+    display:flex;align-items:flex-start;gap:12px;background:var(--glass-2);
+    padding:13px 15px;cursor:pointer;font-size:.9rem;user-select:none;
+    transition:background .18s, box-shadow .18s;position:relative;
+  }
+  label.tog:hover{background:rgba(45,38,30,.6)}
+  label.tog.on{background:rgba(52,43,26,.6);box-shadow:inset 3px 0 0 var(--gold)}
+  label.tog input{position:absolute;opacity:0;pointer-events:none}
+  label.tog .box{
+    flex:none;width:17px;height:17px;margin-top:2px;border:1px solid var(--gold-dim);
+    border-radius:3px;position:relative;transition:.18s;background:rgba(0,0,0,.25)
+  }
+  label.tog.on .box{background:var(--gold);border-color:var(--gold)}
+  label.tog.on .box::after{content:"";position:absolute;left:5px;top:1px;width:4px;height:9px;
+    border:solid #1a140a;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  label.tog .txt{color:var(--bone)}
+  label.tog small{display:block;color:var(--dim);font-size:.74rem;margin-top:2px;line-height:1.35}
+
+  .field{display:flex;align-items:center;gap:12px;margin-top:16px;font-size:.9rem;color:var(--ink)}
+  .field input{
+    width:70px;background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--bone);
+    border-radius:5px;padding:8px;font-size:1rem;text-align:center;font-family:var(--serif)
+  }
+  .field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(198,166,100,.15)}
+  .field .note{color:var(--dim);font-size:.8rem}
+
+  /* ---- output ---- */
+  .out{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:20px}
+  @media(max-width:520px){.out{grid-template-columns:1fr 1fr}}
+  .stat{text-align:center;padding:14px 8px;border:1px solid var(--line-soft);border-radius:6px;
+    background:rgba(0,0,0,.25)}
+  .stat .n{font-family:var(--serif);font-size:2.1rem;font-weight:600;line-height:1;color:var(--bone)}
+  .stat .l{font-size:.68rem;color:var(--dim);margin-top:8px;text-transform:uppercase;letter-spacing:.16em}
+  .stat.dmg .n{color:var(--crimson)} .stat.life .n{color:var(--sage)} .stat.drain .n{color:var(--amber)}
+
+  .banner{margin-top:16px;padding:12px 15px;border-radius:5px;font-size:.87rem;display:none}
+  .banner.show{display:block}
+  .banner.win{background:rgba(90,72,20,.4);border:1px solid var(--amber);color:var(--amber);
+    font-family:var(--serif);font-style:italic;letter-spacing:.02em}
+  .banner.info{background:rgba(30,40,52,.5);border:1px solid rgba(120,150,180,.35);color:#c4d4e2}
+
+  .caveat{color:var(--dim);font-size:.82rem;margin:16px 0 0;padding-left:14px;
+    border-left:2px solid var(--line)}
+  .caveat b{color:var(--gold);font-weight:600}
+
+  /* ---- reference ---- */
+  .ref-title{font-family:var(--serif);font-size:1.24rem;color:var(--bone);margin:0 0 14px;font-weight:600}
+  details{border-bottom:1px solid var(--line-soft)}
+  details:last-child{border-bottom:0}
+  summary{cursor:pointer;padding:14px 2px;font-size:.94rem;color:var(--bone);list-style:none;
+    display:flex;align-items:center;gap:12px;transition:color .15s}
+  summary:hover{color:var(--gold)}
+  summary::-webkit-details-marker{display:none}
+  summary .plus{flex:none;width:14px;color:var(--gold-dim);font-family:var(--serif);text-align:center;transition:.2s}
+  details[open] summary .plus{transform:rotate(45deg);color:var(--gold)}
+  .body{padding:0 2px 16px 26px;font-size:.88rem;color:var(--ink)}
+  .body ul{margin:4px 0;padding-left:16px} .body li{margin:7px 0}
+  .body b{color:var(--gold);font-weight:600}
+  .tag{color:var(--crimson);font-family:var(--serif);font-style:italic;margin-right:4px}
+  .step{display:flex;gap:12px;margin:9px 0}
+  .step .no{font-family:var(--serif);color:var(--gold);font-weight:600;flex:none;width:18px}
+
+  footer{text-align:center;color:var(--dim);font-size:.72rem;letter-spacing:.08em;margin:26px 18px 0}
+  footer .dot{color:var(--gold-dim);margin:0 8px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Pilot Companion</div>
+  <h1>Snapdax</h1>
+  <div class="rule"></div>
+  <div class="sub">Apex of the Hunt — Mardu Mutate</div>
+  <div class="meta"><span class="pip">Mutate {2}{B/R}{W}{W}</span> &nbsp;·&nbsp; Double strike &nbsp;·&nbsp; Drain, then repeat</div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ MUTATE STRIKE ============ -->
+  <section class="panel">
+    <div class="head"><span class="num-mark">I</span><h2>Mutate Strike</h2></div>
+    <p class="lead">The payoff fires <b>on mutate</b> — not on cast or ETB: <em>4 damage to a creature or planeswalker an opponent controls, and you gain 4 life.</em> Set what's on the board.</p>
+    <div class="toggles" id="mutateTogs">
+      <label class="tog"><input type="checkbox" id="roaming"><span class="box"></span><span class="txt">Roaming Throne<small>Named a Snapdax type — trigger happens twice</small></span></label>
+      <label class="tog"><input type="checkbox" id="solphim"><span class="box"></span><span class="txt">Solphim<small>Doubles your noncombat damage</small></span></label>
+      <label class="tog"><input type="checkbox" id="mjolnir"><span class="box"></span><span class="txt">Mjölnir equipped<small>Doubles all damage Snapdax deals</small></span></label>
+      <label class="tog"><input type="checkbox" id="vito"><span class="box"></span><span class="txt">Vito<small>You gain life — target opponent loses that much</small></span></label>
+      <label class="tog"><input type="checkbox" id="marauding"><span class="box"></span><span class="txt">Marauding / Cliffhaven<small>You gain life — each opponent loses 1</small></span></label>
+      <label class="tog"><input type="checkbox" id="conqueror"><span class="box"></span><span class="txt">Bloodthirsty Conqueror<small>Opponent loses life — you gain that much</small></span></label>
+    </div>
+    <div class="field">
+      <span>Mutates chained this turn</span>
+      <input type="number" id="mutates" value="1" min="1" max="20">
+    </div>
+
+    <div class="out">
+      <div class="stat dmg"><div class="n" id="oDmg">4</div><div class="l">Damage</div></div>
+      <div class="stat life"><div class="n" id="oLife">4</div><div class="l">Life gained</div></div>
+      <div class="stat drain"><div class="n" id="oDrain">0</div><div class="l">Bonus drain</div></div>
+    </div>
+    <div class="banner win" id="bWin">Infinite loop online — any life change loops, and the table is dead. Read the room first.</div>
+    <div class="banner info" id="bNote"></div>
+    <p class="caveat"><b>Obosh</b> doubles only <em>odd</em> mana-value sources. Snapdax is MV 4, so Obosh does not touch this trigger — though it does double most of your other creatures and Blasphemous Act.</p>
+  </section>
+
+  <!-- ============ COMBAT ============ -->
+  <section class="panel">
+    <div class="head"><span class="num-mark">II</span><h2>Combat Damage</h2></div>
+    <p class="lead">Double strike counts the pile's power twice. Enter the current power of the top creature.</p>
+    <div class="field">
+      <span>Pile power</span>
+      <input type="number" id="power" value="3" min="0" max="99">
+      <span class="note">Snapdax base 3</span>
+    </div>
+    <div class="toggles" style="margin-top:16px">
+      <label class="tog"><input type="checkbox" id="cMjolnir"><span class="box"></span><span class="txt">Mjölnir equipped<small>Doubles combat damage as well</small></span></label>
+      <label class="tog"><input type="checkbox" id="cLifelink"><span class="box"></span><span class="txt">Lifelink granted<small>Cubwarden · Boot Nipper · Unexpected Fangs</small></span></label>
+    </div>
+    <div class="out">
+      <div class="stat dmg"><div class="n" id="cDmg">6</div><div class="l">Combat</div></div>
+      <div class="stat life"><div class="n" id="cLife">0</div><div class="l">Life gained</div></div>
+      <div class="stat drain"><div class="n" id="cDrain">0</div><div class="l">Drain via Vito</div></div>
+    </div>
+    <p class="caveat">Toggle Vito in panel I to convert lifelinked combat into opponent life loss.</p>
+  </section>
+
+  <!-- ============ REFERENCE ============ -->
+  <section class="panel">
+    <div class="head"><span class="num-mark">III</span><h2>At the Table</h2></div>
+    <hr class="hr">
+
+    <details>
+      <summary><span class="plus">+</span>Rules to keep straight</summary>
+      <div class="body"><ul>
+        <li>Casting Snapdax <b>normally does nothing special</b> — the 4 / 4 only fires when he <b>mutates</b>.</li>
+        <li>You <b>need not recast</b> Snapdax to retrigger — mutating any cheap creature onto the pile re-fires it.</li>
+        <li><b>Copies take only the top card</b> and do not mutate; Helm, Jaxis, and Saw tokens will not re-fire the trigger. Use them as bodies and fresh mutate bases.</li>
+        <li><b>Never Saw in Half your own Snapdax pile</b> — it is destroyed, and you copy only a small, legendary top card. Saw non-legendary payoffs instead.</li>
+        <li><b>Command Beacon</b> returns Snapdax to hand for a tax-free recast.</li>
+        <li>Mutate onto <b>non-Human</b> creatures you own. Slot new cards <b>under</b> to keep Snapdax on top.</li>
+      </ul></div>
+    </details>
+
+    <details>
+      <summary><span class="plus">+</span>Lines that win the game</summary>
+      <div class="body"><ul>
+        <li><span class="tag">Combo</span><b>Bloodthirsty Conqueror + Vito</b> — any life loss loops, the table dies.</li>
+        <li><span class="tag">Combo</span><b>Conqueror + Marauding / Cliffhaven</b> — any lifegain loops, draining all opponents at once.</li>
+        <li><span class="tag">Blowout</span><b>Repercussion + Blasphemous Act</b> — mass damage redirected to faces; Barbed Servitor survives it.</li>
+        <li><span class="tag">Beatdown</span><b>Mjölnir + Solphim</b> on a double-strike pile — mutate for 16, then swing with lifelink drain.</li>
+      </ul></div>
+    </details>
+
+    <details>
+      <summary><span class="plus">+</span>Tutor priority</summary>
+      <div class="body"><ul>
+        <li>Drainer + lifegain online &rarr; <b>Bloodthirsty Conqueror</b> for the win.</li>
+        <li>Already holding Conqueror &rarr; <b>Vito</b>, the cleanest closer.</li>
+        <li>Turn 1–2 &rarr; <b>Sol Ring</b>. Low on gas &rarr; <b>Black Market Connections</b>.</li>
+        <li>Pile assembled &rarr; <b>Solphim</b>, <b>Mjölnir</b>, or <b>Roaming Throne</b>.</li>
+        <li>Threat plus open removal &rarr; <b>Swiftfoot Boots</b> or <b>Skrelv</b>.</li>
+        <li>Cast Vampiric Tutor on the end step before your turn to blunt its cost.</li>
+      </ul></div>
+    </details>
+
+    <details>
+      <summary><span class="plus">+</span>Mulligan</summary>
+      <div class="body"><ul>
+        <li>Keep <b>two or more lands</b> — ideally a white source for {W}{W} — plus a rock or cheap base.</li>
+        <li>Ideal: an early <b>mutate base</b> (Mysterious Egg, Boot Nipper, Skrelv) beside a <b>draw engine</b>.</li>
+        <li>Ship hands with no white source, all five-drops, or no early play.</li>
+        <li>Snapdax need not be in hand — he waits in the command zone.</li>
+      </ul></div>
+    </details>
+
+    <details>
+      <summary><span class="plus">+</span>Turn sequencing</summary>
+      <div class="body">
+        <div class="step"><span class="no">I</span><span><b>Ramp &amp; bases.</b> Rocks, Land Tax, a cheap non-Human. Avoid over-committing into open mana.</span></div>
+        <div class="step"><span class="no">II</span><span><b>Engine.</b> Land a draw engine or a drain payoff such as Vito or Marauding.</span></div>
+        <div class="step"><span class="no">III</span><span><b>First mutate.</b> Only with protection or clear tempo. Bait removal against loaded tables.</span></div>
+        <div class="step"><span class="no">IV</span><span><b>Doubler.</b> Add Solphim, Mjölnir, or Roaming Throne, then chain mutates.</span></div>
+        <div class="step"><span class="no">V</span><span><b>Close.</b> Combo drain, Repercussion plus a wipe, or a lifelinking double-striker and Vito the difference.</span></div>
+      </div>
+    </details>
+  </section>
+
+  <footer>Snapdax, Apex of the Hunt <span class="dot">·</span> offline companion <span class="dot">·</span> nothing leaves this page</footer>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){return document.getElementById(id);};
+
+  function syncTog(cb){
+    var l = cb.closest(".tog"); if(l) l.classList.toggle("on", cb.checked);
+  }
+
+  // ---- Mutate ----
+  var mIds = ["roaming","solphim","mjolnir","vito","marauding","conqueror","mutates"];
+  function calcMutate(){
+    var roaming=$("roaming").checked, solphim=$("solphim").checked, mjolnir=$("mjolnir").checked,
+        vito=$("vito").checked, marauding=$("marauding").checked, conqueror=$("conqueror").checked;
+    var mutates=Math.max(1, parseInt($("mutates").value)||1);
+
+    var instances = roaming ? 2 : 1;
+    var dmgMult   = (solphim?2:1) * (mjolnir?2:1);
+    var perDmg    = 4 * dmgMult;
+    var totalDmg  = instances * perDmg * mutates;
+    var totalLife = instances * 4 * mutates;
+
+    var drain = 0;
+    if(vito) drain += totalLife;
+    if(marauding) drain += instances * mutates;
+
+    $("oDmg").textContent=totalDmg;
+    $("oLife").textContent=totalLife;
+    $("oDrain").textContent=drain;
+
+    var infinite = conqueror && (vito || marauding);
+    $("bWin").classList.toggle("show", infinite);
+
+    var notes=[];
+    if(roaming) notes.push("Roaming Throne splits damage across up to two targets, " + perDmg + " each.");
+    if(solphim && mjolnir) notes.push("Solphim and Mjölnir stack multiplicatively: 4 → 8 → 16.");
+    if(conqueror && !(vito||marauding)) notes.push("Conqueror alone only refunds your lifegain — add Vito or Marauding to loop.");
+    var nb=$("bNote");
+    if(notes.length && !infinite){ nb.textContent=notes.join("  "); nb.classList.add("show"); }
+    else nb.classList.remove("show");
+
+    ["roaming","solphim","mjolnir","vito","marauding","conqueror"].forEach(function(id){ syncTog($(id)); });
+  }
+  mIds.forEach(function(id){ $(id).addEventListener("input", calcMutate); });
+
+  // ---- Combat ----
+  function calcCombat(){
+    var p=Math.max(0, parseInt($("power").value)||0);
+    var mj=$("cMjolnir").checked, ll=$("cLifelink").checked, vito=$("vito").checked;
+    var dmg=p*2*(mj?2:1);
+    var life=ll?dmg:0;
+    var drain=(ll&&vito)?life:0;
+    $("cDmg").textContent=dmg; $("cLife").textContent=life; $("cDrain").textContent=drain;
+    syncTog($("cMjolnir")); syncTog($("cLifelink"));
+  }
+  ["power","cMjolnir","cLifelink"].forEach(function(id){ $(id).addEventListener("input", calcCombat); });
+  $("vito").addEventListener("input", calcCombat);
+
+  calcMutate(); calcCombat();
+})();
+</script>
+</body>
+</html>
